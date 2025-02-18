@@ -22,9 +22,8 @@ shared_preload_libraries = 'pg_duckdb'
 
 > or check with SQL statement
 ```
-select * from pg_settings;
+SELECT * from pg_settings;
 ```
-
 
 # Step 1 Deploy Postgres with duckdb
 
@@ -43,6 +42,16 @@ SELECT proname FROM pg_proc WHERE proname LIKE 'duckdb%';
 ```
 SET duckdb.force_execution = true;
 ```
+> Run all Queries below
+
+# Step 2 Deploy Postgres only
+### Run postgres terminal from terminal
+```bash
+docker exec -it postgres psql -U postgres
+```
+Enter your password from docker-compose.yml
+
+> Run all Queries below
 
 # Queries
 
@@ -97,6 +106,9 @@ FROM Users
 GROUP BY first_name
 ORDER BY total_users DESC;
 ```
+
+# Other useful queries for duckdb
+
 ### Drop Extension
 ```
 DROP EXTENSION IF EXISTS pg_duckdb CASCADE;

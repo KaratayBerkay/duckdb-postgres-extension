@@ -25,7 +25,6 @@ BEGIN
             md5(random()::text),
             NOW()
         );
-
         i := i + 1;
     END LOOP;
 END $$;

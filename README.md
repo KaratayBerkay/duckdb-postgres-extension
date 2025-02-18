@@ -107,6 +107,8 @@ BEGIN
     END LOOP;
 END $$;
 ```
+
+
 ### Set timing ON
 ```
 \timing
@@ -129,6 +131,60 @@ GROUP BY first_name
 ORDER BY total_users DESC;
 ```
 
+# Output of Explain Analyze
+
+Output duckdb:
+```
+postgres=# EXPLAIN ANALYZE 
+SELECT 
+    LEFT(username, POSITION(' ' IN username) - 1) AS first_name,  -- Extract first name
+    COUNT(*) AS total_users,         -- Total users per first name
+    MIN(created_at) AS first_user,   -- First user created with this name
+    MAX(created_at) AS last_user,    -- Last user created with this name
+    AVG(LENGTH(password_hash)) AS avg_password_length -- Average password hash length
+FROM Users
+GROUP BY first_name
+ORDER BY total_users DESC;
+Time: 24154.963 ms (00:24.155)
+```
+Output postgres:
+```
+postgres=# EXPLAIN ANALYZE
+SELECT
+    LEFT(username, POSITION(' ' IN username) - 1) AS first_name,  -- Extract first name
+    COUNT(*) AS total_users,         -- Total users per first name
+    MIN(created_at) AS first_user,   -- First user created with this name
+    MAX(created_at) AS last_user,    -- Last user created with this name
+    AVG(LENGTH(password_hash)) AS avg_password_length -- Average password hash length
+FROM Users
+GROUP BY first_name
+ORDER BY total_users DESC;
+                                                                        QUERY PLAN                                                                         
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=5070110.59..5095111.16 rows=10000225 width=88) (actual time=70859.996..72819.581 rows=9561573 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: external merge  Disk: 578712kB
+   ->  Finalize GroupAggregate  (cost=1059921.89..2471826.98 rows=10000225 width=88) (actual time=27442.569..63733.206 rows=9561573 loops=1)
+         Group Key: ("left"((username)::text, (POSITION((' '::text) IN (username)) - 1)))
+         ->  Gather Merge  (cost=1059921.89..2167653.48 rows=8333520 width=88) (actual time=27442.547..50330.700 rows=9561688 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               ->  Partial GroupAggregate  (cost=1058921.87..1204758.47 rows=4166760 width=88) (actual time=27392.473..36375.765 rows=3187229 loops=3)
+                     Group Key: ("left"((username)::text, (POSITION((' '::text) IN (username)) - 1)))
+                     ->  Sort  (cost=1058921.87..1069338.77 rows=4166760 width=73) (actual time=27392.443..32522.655 rows=3333333 loops=3)
+                           Sort Key: ("left"((username)::text, (POSITION((' '::text) IN (username)) - 1)))
+                           Sort Method: external merge  Disk: 242152kB
+                           Worker 0:  Sort Method: external merge  Disk: 240352kB
+                           Worker 1:  Sort Method: external merge  Disk: 240320kB
+                           ->  Parallel Seq Scan on users  (cost=0.00..230483.30 rows=4166760 width=73) (actual time=0.078..1816.893 rows=3333333 loops=3)
+ Planning Time: 0.167 ms
+ Execution Time: 73669.878 ms
+(18 rows)
+
+Time: 73671.140 ms (01:13.671)
+```
+
+
 # Other useful queries for duckdb
 
 ### Drop Extension
@@ -139,3 +195,7 @@ DROP EXTENSION IF EXISTS pg_duckdb CASCADE;
 ```
 CREATE EXTENSION pg_duckdb;
 ```
+
+# What to do with it?
+Duckdb extension can save chunks as parquet files and read them back. This is useful for data warehousing and data lake scenarios.
+Able to read data from parquet files and write them back to database tables.

@@ -1,0 +1,33 @@
+services:
+  duckdb_postgres:
+    container_name: duckdb_postgres
+    image: pgduckdb/pgduckdb:17-v0.1.0
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=duckdb
+      - POSTGRESQL_DATABASE=postgres
+    volumes:
+      - pg_duckdb_data:/var/lib/postgresql/data
+#      - ./statics/postgresql.conf:/etc/postgresql.conf
+#    command: postgres -c 'config_file=/etc/postgresql.conf'
+    restart: always
+
+  postgres:
+    image: bitnami/postgresql:latest
+    container_name: postgres_db
+    restart: always
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=duckdb
+      - POSTGRESQL_DATABASE=postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/bitnami/postgresql
+#      - ./statics/init.sql:/docker-entrypoint-initdb.d/init.sql # Run SQL script on startup
+
+volumes:
+  pg_duckdb_data:
+  postgres_data:

@@ -37,10 +37,28 @@ Enter your password from docker-compose.yml
 ```
 SELECT proname FROM pg_proc WHERE proname LIKE 'duckdb%';
 ```
+Output:
+```
+              proname               
+------------------------------------
+ duckdb_alter_table_trigger
+ duckdb_am_handler
+ duckdb_create_table_trigger
+ duckdb_drop_trigger
+ duckdb_grant_trigger
+ duckdb_secret_r2_check
+ duckdb_update_extensions_table_seq
+ duckdb_update_secrets_table_seq
+(8 rows)
+```
 
 ### Force postgres to use duckdb at executions
 ```
 SET duckdb.force_execution = true;
+```
+Output:
+```
+SET
 ```
 > Run all Queries below
 
@@ -92,6 +110,10 @@ END $$;
 ### Set timing ON
 ```
 \timing
+```
+Output:
+```
+Timing is on.
 ```
 ### Explain Analyze Query
 ```
